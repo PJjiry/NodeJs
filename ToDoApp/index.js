@@ -5,20 +5,15 @@ import {serveStatic} from "@hono/node-server/serve-static";
 import {renderFile} from "ejs";
 
 const todos = [
-
     {
         id: 1,
-        title:
-            'Zajit na pivo',
-        done:
-            false,
+        title: 'Zajit na pivo',
+        done: false,
     },
     {
         id: 2,
-        title:
-            'Udelat semestralku',
-        done:
-            false,
+        title: 'Udelat semestralku',
+        done: false,
     }
 ]
 
@@ -35,9 +30,8 @@ app.get("/", async (c) => {
     return c.html(html)
 })
 
-app.post('/todos', async (c)=>{
+app.post('/todos', async (c) => {
     const form = await c.req.formData()
-
 
     todos.push({
         id: todos.length + 1,
@@ -48,23 +42,48 @@ app.post('/todos', async (c)=>{
 })
 
 
-app.get('/todos/:id/toggle', async (c)=>{
+app.get('/todos/:id/toggle', async (c) => {
     const id = Number(c.req.param('id'))
 
-    const todo = todos.find((todo => todo.id=== id))
+    const todo = todos.find((todo => todo.id === id))
 
-    if (!todo){
-       return c.notFound()
+    if (!todo) {
+        return c.notFound()
     }
-    todo.done=!todo.done
+    todo.done = !todo.done
     return c.redirect('/')
 })
 
-app.get('/todos/:id/remove', async (c)=>{
+app.get('/todos/:id/remove', async (c) => {
     const id = Number(c.req.param('id'))
 
     const index = todos.findIndex((todo) => todo.id === id)
-    todos.splice(index,1)
+    todos.splice(index, 1)
+    return c.redirect('/')
+})
+
+app.get('/todo/:id', async (c) => {
+    const id = Number(c.req.param('id'))
+
+    const todo = todos.find((todo => todo.id === id))
+
+    if (!todo) {
+        return c.notFound()
+    }
+    const html = await renderFile("views/todo.html", {
+        todo,
+    })
+
+    return c.html(html)
+})
+
+app.post('/todo/:id/change', async (c) => {
+    const id = Number(c.req.param('id'))
+
+    const index = todos.findIndex((todo) => todo.id === id)
+    const form = await c.req.formData()
+
+    todos[index].title = form.get('title')
     return c.redirect('/')
 })
 
