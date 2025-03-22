@@ -9,7 +9,9 @@
 <ul>
     <% for (const todo of todos) {%>
     <li>
-        <%= todo.title %>
+        <a href="/todo/<%= todo.id %>">
+            <%= todo.title %>
+        </a>
         <% if (todo.done) { %>
         <a href="/todos/<%= todo.id %>/toggle"> dokonceno </a>
         <a href="/todos/<%= todo.id %>/remove">odstranit</a>
