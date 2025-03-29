@@ -20,10 +20,16 @@
 <a href="/todos/<%= todo.id %>/toggle"> nedokončeno </a>
 <% } %>
 <hr />
+<h2>Priorita: <%= todo.priority %></h2>
 <h2>Upravit todočko</h2>
 <form action="/todos/<%= todo.id %>" method="post">
     <label>Titulek</label>
     <input name="title" value="<%= todo.title %>" />
+    <select name="priority">
+        <option value="low">low</option>
+        <option value="normal" selected>normal</option>
+        <option value="high">high</option>
+    </select>
     <button type="submit">Uložit</button>
 </form>
 </body>
