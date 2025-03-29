@@ -1,29 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    />
     <title>Document</title>
 </head>
 <body>
 <h1><%= title.toUpperCase() %></h1>
+
 <ul>
-    <% for (const todo of todos) {%>
+    <% for (const todo of todos) { %>
     <li>
-        <a href="/todo/<%= todo.id %>">
+        <a href="/todos/<%= todo.id %>">
             <%= todo.title %>
         </a>
-        <% if (todo.done) { %>
-        <a href="/todos/<%= todo.id %>/toggle"> dokonceno </a>
-        <a href="/todos/<%= todo.id %>/remove">odstranit</a>
+        - <% if (todo.done) { %>
+        <a href="/todos/<%= todo.id %>/toggle">dokončeno</a>
+        <a href="/todos/<%= todo.id %>/remove">odebrat</a>
         <% } else { %>
-        <a href="/todos/<%= todo.id %> /toggle"> nedokonceno </a>
-        <a href="/todos/<%= todo.id %>/remove">odstranit</a>
+        <a href="/todos/<%= todo.id %>/toggle">
+            nedokončeno
+        </a>
         <% } %>
     </li>
     <% } %>
 </ul>
-<form action="/todos" method="POST">
-    <input type="text" name="title" placeholder="Title"/>
+
+<form method="post" action="/todos">
+    <input name="title" />
     <button type="submit">Přidat todo</button>
 </form>
 </body>
