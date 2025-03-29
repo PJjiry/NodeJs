@@ -34,6 +34,7 @@ app.post('/todos', async (c) => {
     await db.insert(todosTable).values({
         title: form.get("title"),
         done: false,
+        priority:'normal'
     })
 
     return c.redirect("/")
@@ -64,7 +65,7 @@ app.post("/todos/:id", async (c) => {
 
     await db
         .update(todosTable)
-        .set({ title: form.get("title") })
+        .set({ title: form.get("title"), priority: form.get("priority") })
         .where(eq(todosTable.id, id))
 
     return c.redirect(c.req.header("Referer"))
