@@ -4,6 +4,6 @@ export default defineConfig({
     dialect: 'sqlite',
     schema: './src/schema.js',
     dbCredentials: {
-        url: 'file:./ToDoApp/db.sqlite',
+        url: 'file:db.sqlite',
     }
 })

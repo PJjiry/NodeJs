@@ -4,7 +4,7 @@ import {logger} from "hono/logger"
 import {serveStatic} from "@hono/node-server/serve-static"
 import {renderFile} from "ejs"
 import {drizzle} from "drizzle-orm/libsql"
-import {todosTable} from "../src/schema.js"
+import {todosTable} from "./src/schema.js"
 import {eq} from "drizzle-orm"
 
 const db = drizzle({
