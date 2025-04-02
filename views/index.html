@@ -10,26 +10,9 @@
 </head>
 <body>
 <h1><%= title.toUpperCase() %></h1>
-
-<ul>
-    <% for (const todo of todos) { %>
-    <li>
-        <a href="/todos/<%= todo.id %>">
-            <%= todo.title %>
-        </a>
-        - <% if (todo.done) { %>
-        <a href="/todos/<%= todo.id %>/toggle">dokončeno</a>
-        <span>Priorita: <%= todo.priority %></span>
-        <a href="/todos/<%= todo.id %>/remove">odebrat</a>
-        <% } else { %>
-        <a href="/todos/<%= todo.id %>/toggle">
-            nedokončeno
-        </a>
-        <span>Priorita: <%= todo.priority %></span>
-        <% } %>
-    </li>
-    <% } %>
-</ul>
+<div id="todos">
+    <%- include('_todos.html') %>
+</div>
 
 <form method="post" action="/todos">
     <input name="title" />
@@ -37,3 +20,15 @@
 </form>
 </body>
 </html>
+<script>
+    const ws = new WebSocket('ws://localhost:3000/ws');
+
+    ws.addEventListener('message', event => {
+        const {type, html} = JSON.parse(event.data);
+
+        if (type === 'todos') {
+            const el = document.getElementById("todos")
+            el.innerHTML = html;
+        }
+    })
+</script>
