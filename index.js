@@ -56,8 +56,6 @@ app.get("/todos/:id", async (c) => {
         todo,
     })
 
-    sendTodosToAllConnections()
-
     return c.html(detail)
 })
 
