@@ -5,13 +5,15 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava",
+    "dev": "node --watch index.js"
   },
   "private": true,
   "dependencies": {
     "@hono/node-server": "^1.13.8",
     "@hono/node-ws": "^1.1.1",
     "@libsql/client": "^0.15.1",
+    "ava": "^6.2.0",
     "drizzle-kit": "^0.30.5",
     "drizzle-orm": "^0.41.0",
     "ejs": "^3.1.10",
