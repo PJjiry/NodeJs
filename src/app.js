@@ -8,9 +8,11 @@ import {
     createTodo,
     deleteTodo,
     getAllTodos,
-    getTodoById,
+    getTodoById, getUserByToken,
     updateTodo,
 } from "./db.js"
+import {usersRouter} from "./users.js";
+import {getCookie} from "hono/dist/types/helper/cookie/index.js";
 
 export const app = new Hono()
 
@@ -20,12 +22,25 @@ export const {injectWebSocket, upgradeWebSocket} =
 // app.use(logger())
 app.use(serveStatic({root: "public"}))
 
+app.use(async (c) => {
+    const token = getCookie(c.req, "token")
+    if (!token) return c.redirect("/register")
+
+    const user = await getUserByToken(token)
+
+    c.set("user", user)
+    await c.next()
+})
+
+app.route("/", usersRouter)
+
 app.get("/", async (c) => {
     const todos = await getAllTodos()
 
     const index = await renderFile("views/index.html", {
         title: "My todo app",
         todos,
+        user: c.get("user"),
     })
 
     return c.html(index)
@@ -37,6 +52,7 @@ app.post("/todos", async (c) => {
     await createTodo({
         title: form.get("title"),
         done: false,
+        user: c.get("user"),
     })
 
     sendTodosToAllConnections()
