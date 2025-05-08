@@ -1,24 +1,36 @@
-import {Hono} from "hono"
-import {logger} from "hono/logger"
-import {serveStatic} from "@hono/node-server/serve-static"
-import {renderFile} from "ejs"
-import {createNodeWebSocket} from "@hono/node-ws"
-import {WSContext} from "hono/ws"
+import { Hono } from "hono"
+import { logger } from "hono/logger"
+import { serveStatic } from "@hono/node-server/serve-static"
+import { renderFile } from "ejs"
+import { createNodeWebSocket } from "@hono/node-ws"
+import { WSContext } from "hono/ws"
 import {
     createTodo,
     deleteTodo,
     getAllTodos,
     getTodoById,
+    getUserByToken,
     updateTodo,
 } from "./db.js"
+import { usersRouter } from "./users.js"
+import { getCookie } from "hono/cookie"
 
 export const app = new Hono()
 
-export const {injectWebSocket, upgradeWebSocket} =
-    createNodeWebSocket({app})
+export const { injectWebSocket, upgradeWebSocket } =
+    createNodeWebSocket({ app })
 
 // app.use(logger())
-app.use(serveStatic({root: "public"}))
+app.use(serveStatic({ root: "public" }))
+
+app.use(async (c, next) => {
+    const token = getCookie(c, "token")
+    const user = await getUserByToken(token)
+    c.set("user", user)
+    await next()
+})
+
+app.route("/", usersRouter)
 
 app.get("/", async (c) => {
     const todos = await getAllTodos()
@@ -26,6 +38,7 @@ app.get("/", async (c) => {
     const index = await renderFile("views/index.html", {
         title: "My todo app",
         todos,
+        user: c.get("user"),
     })
 
     return c.html(index)
@@ -37,6 +50,7 @@ app.post("/todos", async (c) => {
     await createTodo({
         title: form.get("title"),
         done: false,
+        user: c.get("user"),
     })
 
     sendTodosToAllConnections()
@@ -85,7 +99,7 @@ app.get("/todos/:id/toggle", async (c) => {
 
     if (!todo) return c.notFound()
 
-    await updateTodo(id, {done: !todo.done})
+    await updateTodo(id, { done: !todo.done })
 
     sendTodosToAllConnections()
     sendTodoDetailToAllConnections(id)

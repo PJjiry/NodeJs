@@ -9,27 +9,31 @@
     <title>Document</title>
 </head>
 <body>
+<% if (user) { %>
+<h1><%= user.username %></h1>
+<% } %>
 <h1><%= title.toUpperCase() %></h1>
-<div id="todos">
-    <%- include('_todos.html') %>
-</div>
+
+<div id="todos"><%- include('_todos.html') %></div>
 
 <form method="post" action="/todos">
-    <label for="title">Nazev Todo</label>
-    <input name="title" id="title" />
+    <label for="title">Název todo</label>
+    <input id="title" name="title" />
     <button type="submit">Přidat todo</button>
 </form>
-</body>
-</html>
+
 <script>
-    const ws = new WebSocket('ws://localhost:3000/ws');
+    const ws = new WebSocket("ws://localhost:3000/ws")
 
-    ws.addEventListener('message', event => {
-        const {type, html} = JSON.parse(event.data);
+    ws.addEventListener("message", (evt) => {
+        const { type, html } = JSON.parse(evt.data)
 
-        if (type === 'todos') {
+        if (type === "todos") {
             const el = document.getElementById("todos")
-            el.innerHTML = html;
+
+            el.innerHTML = html
         }
     })
 </script>
+</body>
+</html>
