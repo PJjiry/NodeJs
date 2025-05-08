@@ -1,16 +1,17 @@
-import {drizzle} from "drizzle-orm/libsql"
 import crypto from "crypto"
-import {eq} from "drizzle-orm"
-import {todosTable, usersTable} from "./schema.js"
-import {title} from "hono/dist/types/jsx/intrinsic-element/components.js";
+import { drizzle } from "drizzle-orm/libsql"
+import { eq } from "drizzle-orm"
+import { migrate } from "drizzle-orm/libsql/migrator"
+import { todosTable, usersTable } from "./schema.js"
+
+const isTest = process.env.NODE_ENV === "test"
 
 export const db = drizzle({
-    connection:
-        process.env.NODE_ENV === "test"
-            ? "file::memory:"
-            : "file:db.sqlite",
-    logger: process.env.NODE_ENV !== "test",
+    connection: isTest ? "file::memory:" : "file:db.sqlite",
+    logger: !isTest,
 })
+
+await migrate(db, { migrationsFolder: "drizzle" })
 
 export const getAllTodos = async () => {
     const todos = await db.select().from(todosTable).all()
@@ -32,10 +33,9 @@ export const createTodo = async (values) => {
     return await db
         .insert(todosTable)
         .values({
-                ...values,
-                userId: values.user ? values.user.id : null,
-            }
-        )
+            ...values,
+            userId: values.user ? values.user.id : null,
+        })
         .returning(todosTable)
         .get()
 }
@@ -52,27 +52,52 @@ export const deleteTodo = async (id) => {
 }
 
 export const createUser = async (username, password) => {
-    const salt = crypto.randomBytes(16).toString('hex')
-    const hashedPassword = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex')
-    const token = crypto.randomBytes(16).toString('hex')
+    const salt = crypto.randomBytes(16).toString("hex")
+    const hashedPassword = crypto
+        .pbkdf2Sync(password, salt, 100000, 64, "sha512")
+        .toString("hex")
+    const token = crypto.randomBytes(16).toString("hex")
 
-    return await db.insert(usersTable).values({
-        username,
-        hashedPassword,
-        token,
-        salt
-    }).returning(usersTable).get()
+    const user = await db
+        .insert(usersTable)
+        .values({
+            username,
+            hashedPassword,
+            token,
+            salt,
+        })
+        .returning(usersTable)
+        .get()
+
+    return user
 }
 
 export const getUser = async (username, password) => {
-    const user = await db.select().from(usersTable).where(eq(usersTable.username, username)).get()
+    const user = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.username, username))
+        .get()
+
     if (!user) return null
-    const hashedPassword = crypto.pbkdf2Sync(password, user.salt, 100000, 64, 'sha512').toString('hex')
+
+    const hashedPassword = crypto
+        .pbkdf2Sync(password, user.salt, 100000, 64, "sha512")
+        .toString("hex")
+
     if (user.hashedPassword !== hashedPassword) return null
+
     return user
 }
 
 export const getUserByToken = async (token) => {
-    const user = await db.select().from(usersTable).where(eq(usersTable.token, token)).get()
+    if (!token) return null
+
+    const user = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.token, token))
+        .get()
+
     return user
 }

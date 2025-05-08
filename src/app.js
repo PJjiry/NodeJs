@@ -1,35 +1,33 @@
-import {Hono} from "hono"
-import {logger} from "hono/logger"
-import {serveStatic} from "@hono/node-server/serve-static"
-import {renderFile} from "ejs"
-import {createNodeWebSocket} from "@hono/node-ws"
-import {WSContext} from "hono/ws"
+import { Hono } from "hono"
+import { logger } from "hono/logger"
+import { serveStatic } from "@hono/node-server/serve-static"
+import { renderFile } from "ejs"
+import { createNodeWebSocket } from "@hono/node-ws"
+import { WSContext } from "hono/ws"
 import {
     createTodo,
     deleteTodo,
     getAllTodos,
-    getTodoById, getUserByToken,
+    getTodoById,
+    getUserByToken,
     updateTodo,
 } from "./db.js"
-import {usersRouter} from "./users.js";
-import {getCookie} from "hono/dist/types/helper/cookie/index.js";
+import { usersRouter } from "./users.js"
+import { getCookie } from "hono/cookie"
 
 export const app = new Hono()
 
-export const {injectWebSocket, upgradeWebSocket} =
-    createNodeWebSocket({app})
+export const { injectWebSocket, upgradeWebSocket } =
+    createNodeWebSocket({ app })
 
 // app.use(logger())
-app.use(serveStatic({root: "public"}))
+app.use(serveStatic({ root: "public" }))
 
-app.use(async (c) => {
-    const token = getCookie(c.req, "token")
-    if (!token) return c.redirect("/register")
-
+app.use(async (c, next) => {
+    const token = getCookie(c, "token")
     const user = await getUserByToken(token)
-
     c.set("user", user)
-    await c.next()
+    await next()
 })
 
 app.route("/", usersRouter)
@@ -101,7 +99,7 @@ app.get("/todos/:id/toggle", async (c) => {
 
     if (!todo) return c.notFound()
 
-    await updateTodo(id, {done: !todo.done})
+    await updateTodo(id, { done: !todo.done })
 
     sendTodosToAllConnections()
     sendTodoDetailToAllConnections(id)

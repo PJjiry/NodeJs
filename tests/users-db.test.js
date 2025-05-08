@@ -1,33 +1,48 @@
-import test from 'ava';
-import {createUser, db, getUser, getUserByToken} from "../src/db.js";
-import {usersTable} from "../src/schema.js";
+import test from "ava"
+import { usersTable } from "../src/schema.js"
+import {
+    createUser,
+    db,
+    getUser,
+    getUserByToken,
+} from "../src/db.js"
 
-test.beforeEach("delete users",async (t) => {
+test.beforeEach("delete users", async () => {
     await db.delete(usersTable)
 })
 
-test.serial("create user", async (t) => {
-    await createUser("petr", "heslo")
+test.serial("createUser creates user", async (t) => {
+    await createUser("adam", "heslo")
 
     const users = await db.select().from(usersTable).all()
+
     t.is(users.length, 1)
 })
 
-test.serial("getUserByUsername", async (t) => {
-    await createUser("petr", "heslo")
-    const user = await getUser("petr")
-    t.is(user.username, "petr")
-})
+test.serial("getUser gets user", async (t) => {
+    await createUser("adam", "heslo")
 
-test.serial("createUser also return the user", async (t) => {
-    const user = await createUser("adam", "heslo")
+    const user = await getUser("adam", "heslo")
+
     t.is(user.username, "adam")
 })
 
-test.serial("get user by token", async (t) => {
-    const user = await createUser("adam", "heslo")
+test.serial(
+    "createUser also returns the user",
+    async (t) => {
+        const user = await createUser("adam", "heslo")
 
-    const usersByToken = await getUserByToken(user.token)
+        t.is(user.username, "adam")
+    }
+)
 
-    t.is(usersByToken.id, user.id)
-})
+test.serial(
+    "getUserByToken gets user by token",
+    async (t) => {
+        const user = await createUser("adam", "heslo")
+
+        const userByToken = await getUserByToken(user.token)
+
+        t.is(userByToken.id, user.id)
+    }
+)
